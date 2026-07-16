@@ -1,0 +1,1241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Mobile Tea/Coffee POS</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    :root {
+      --bg: #0f172a;
+      --bg-soft: #1e293b;
+      --bg-softer: #020617;
+      --fg: #e5e7eb;
+      --accent: #22c55e;
+      --accent-soft: #16a34a;
+      --danger: #ef4444;
+      --border: #334155;
+      --card: #111827;
+    }
+    .light {
+      --bg: #f3f4f6;
+      --bg-soft: #e5e7eb;
+      --bg-softer: #ffffff;
+      --fg: #111827;
+      --accent: #16a34a;
+      --accent-soft: #15803d;
+      --danger: #b91c1c;
+      --border: #d1d5db;
+      --card: #ffffff;
+    }
+    * {
+      box-sizing: border-box;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+        sans-serif;
+    }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--fg);
+    }
+    .app {
+      max-width: 480px;
+      margin: 0 auto;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      background: radial-gradient(circle at top, #1d283a, var(--bg-softer));
+    }
+    header {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: linear-gradient(90deg, #0f172a, #1e293b);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    header .title {
+      font-weight: 700;
+      font-size: 18px;
+    }
+    header .subtitle {
+      font-size: 11px;
+      opacity: 0.7;
+    }
+    header .right {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    .pill {
+      padding: 4px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      font-size: 11px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .toggle {
+      width: 40px;
+      height: 22px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      padding: 2px;
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+      background: var(--bg-soft);
+    }
+    .toggle-knob {
+      width: 18px;
+      height: 18px;
+      border-radius: 999px;
+      background: var(--accent);
+      transition: transform 0.2s;
+    }
+    .toggle.light-on .toggle-knob {
+      transform: translateX(18px);
+      background: #facc15;
+    }
+    main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      padding: 8px;
+      gap: 8px;
+    }
+    .cards-row {
+      display: flex;
+      gap: 8px;
+    }
+    .card {
+      background: rgba(15, 23, 42, 0.9);
+      border-radius: 12px;
+      padding: 10px;
+      border: 1px solid rgba(148, 163, 184, 0.3);
+      backdrop-filter: blur(12px);
+    }
+    .card-soft {
+      background: var(--card);
+    }
+    .card-title {
+      font-size: 12px;
+      opacity: 0.7;
+      margin-bottom: 4px;
+    }
+    .card-value {
+      font-size: 18px;
+      font-weight: 700;
+    }
+    .chip-row {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-top: 6px;
+    }
+    .chip {
+      font-size: 11px;
+      padding: 4px 8px;
+      border-radius: 999px;
+      border: 1px dashed var(--border);
+      opacity: 0.8;
+    }
+    .layout {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 8px;
+    }
+    @media (max-width: 640px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+    }
+    .menu-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+    .menu-header h2 {
+      font-size: 14px;
+      margin: 0;
+    }
+    .menu-tabs {
+      display: flex;
+      gap: 4px;
+      flex-wrap: wrap;
+    }
+    .menu-tab {
+      font-size: 11px;
+      padding: 4px 8px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      cursor: pointer;
+      opacity: 0.8;
+    }
+    .menu-tab.active {
+      background: var(--accent-soft);
+      border-color: var(--accent-soft);
+      color: #f9fafb;
+      opacity: 1;
+    }
+    .menu-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+    }
+    @media (max-width: 400px) {
+      .menu-grid {
+        grid-template-columns: repeat(1, minmax(0, 1fr));
+      }
+    }
+    .item-card {
+      border-radius: 10px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      background: linear-gradient(135deg, #020617, #111827);
+      display: flex;
+      flex-direction: column;
+      cursor: pointer;
+      position: relative;
+    }
+    .item-img {
+      height: 80px;
+      background-size: cover;
+      background-position: center;
+    }
+    .item-body {
+      padding: 6px 8px 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .item-name {
+      font-size: 13px;
+      font-weight: 600;
+    }
+    .item-meta {
+      font-size: 11px;
+      opacity: 0.7;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .item-price {
+      font-weight: 600;
+      color: var(--accent);
+    }
+    .item-actions {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 4px;
+      gap: 4px;
+    }
+    .btn {
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      padding: 4px 8px;
+      font-size: 11px;
+      cursor: pointer;
+      background: rgba(15, 23, 42, 0.9);
+      color: var(--fg);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+    }
+    .btn-primary {
+      background: var(--accent-soft);
+      border-color: var(--accent-soft);
+      color: #f9fafb;
+    }
+    .btn-danger {
+      background: var(--danger);
+      border-color: var(--danger);
+      color: #f9fafb;
+    }
+    .btn-sm {
+      padding: 2px 6px;
+      font-size: 10px;
+    }
+    .btn-full {
+      width: 100%;
+    }
+    .cart-card {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .cart-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .cart-header h2 {
+      font-size: 14px;
+      margin: 0;
+    }
+    .cart-meta {
+      font-size: 11px;
+      opacity: 0.7;
+    }
+    .cart-list {
+      max-height: 220px;
+      overflow-y: auto;
+      border-radius: 8px;
+      border: 1px dashed var(--border);
+      padding: 6px;
+      background: rgba(15, 23, 42, 0.6);
+    }
+    .cart-empty {
+      font-size: 11px;
+      opacity: 0.7;
+      text-align: center;
+      padding: 12px 4px;
+    }
+    .cart-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 4px 0;
+      border-bottom: 1px dashed rgba(148, 163, 184, 0.3);
+      gap: 6px;
+    }
+    .cart-item:last-child {
+      border-bottom: none;
+    }
+    .cart-item-info {
+      flex: 1;
+    }
+    .cart-item-name {
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .cart-item-meta {
+      font-size: 11px;
+      opacity: 0.7;
+    }
+    .cart-item-controls {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 4px;
+    }
+    .qty-controls {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .qty-btn {
+      width: 20px;
+      height: 20px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      cursor: pointer;
+      background: var(--bg-soft);
+    }
+    .qty-value {
+      font-size: 12px;
+      min-width: 20px;
+      text-align: center;
+    }
+    .cart-summary {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      font-size: 12px;
+    }
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .summary-row strong {
+      font-size: 13px;
+    }
+    .summary-row input {
+      width: 80px;
+      padding: 2px 4px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: var(--bg-soft);
+      color: var(--fg);
+      font-size: 11px;
+    }
+    .actions-row {
+      display: flex;
+      gap: 6px;
+      margin-top: 6px;
+    }
+    .actions-row .btn {
+      flex: 1;
+    }
+    .section-tabs {
+      display: flex;
+      gap: 6px;
+      margin-top: 8px;
+      flex-wrap: wrap;
+    }
+    .section-tab {
+      font-size: 11px;
+      padding: 4px 8px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      cursor: pointer;
+      opacity: 0.8;
+    }
+    .section-tab.active {
+      background: var(--accent-soft);
+      border-color: var(--accent-soft);
+      color: #f9fafb;
+      opacity: 1;
+    }
+    .section-panel {
+      margin-top: 6px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      padding: 8px;
+      background: rgba(15, 23, 42, 0.7);
+      max-height: 220px;
+      overflow-y: auto;
+      font-size: 11px;
+    }
+    .history-search {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 6px;
+    }
+    .history-search input {
+      flex: 1;
+      padding: 4px 6px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: var(--bg-soft);
+      color: var(--fg);
+      font-size: 11px;
+    }
+    .history-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .history-item {
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      padding: 6px;
+      background: rgba(15, 23, 42, 0.8);
+    }
+    .history-top {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      margin-bottom: 4px;
+    }
+    .history-items {
+      font-size: 11px;
+      opacity: 0.8;
+    }
+    .history-total {
+      font-size: 12px;
+      font-weight: 600;
+      margin-top: 4px;
+    }
+    .settings-form {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .settings-form label {
+      font-size: 11px;
+      opacity: 0.8;
+    }
+    .settings-form input {
+      width: 100%;
+      padding: 4px 6px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: var(--bg-soft);
+      color: var(--fg);
+      font-size: 11px;
+    }
+    .qr-preview {
+      margin-top: 6px;
+      border-radius: 8px;
+      border: 1px dashed var(--border);
+      padding: 6px;
+      text-align: center;
+      font-size: 11px;
+    }
+    .qr-preview img {
+      max-width: 120px;
+      max-height: 120px;
+      border-radius: 8px;
+    }
+    footer {
+      padding: 6px 10px 10px;
+      font-size: 10px;
+      opacity: 0.6;
+      text-align: center;
+    }
+
+    /* Print styles for 58mm thermal */
+    @media print {
+      body {
+        background: #ffffff;
+        color: #000000;
+      }
+      .app,
+      header,
+      main,
+      footer {
+        display: none;
+      }
+      #print-area {
+        display: block;
+        width: 58mm;
+        font-size: 11px;
+        padding: 4px;
+      }
+      #print-area h1 {
+        font-size: 13px;
+        text-align: center;
+        margin: 0 0 4px;
+      }
+      #print-area .line {
+        border-top: 1px dashed #000;
+        margin: 4px 0;
+      }
+      #print-area .row {
+        display: flex;
+        justify-content: space-between;
+      }
+      #print-area .items {
+        margin-top: 4px;
+      }
+      #print-area .items div {
+        display: flex;
+        justify-content: space-between;
+      }
+    }
+    #print-area {
+      display: none;
+    }
+  </style>
+</head>
+<body class="dark">
+  <div class="app">
+    <header>
+      <div>
+        <div class="title">Chai POS</div>
+        <div class="subtitle">Mobile Tea/Coffee & Snacks Billing</div>
+      </div>
+      <div class="right">
+        <div class="pill">
+          <span id="today-date"></span>
+        </div>
+        <div class="toggle" id="themeToggle">
+          <div class="toggle-knob"></div>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <!-- Dashboard cards -->
+      <div class="cards-row">
+        <div class="card card-soft" style="flex: 1;">
+          <div class="card-title">Today's Sales</div>
+          <div class="card-value" id="todaySales">₹0</div>
+          <div class="chip-row">
+            <div class="chip">
+              Bills: <span id="todayBills">0</span>
+            </div>
+            <div class="chip">
+              Items: <span id="todayItems">0</span>
+            </div>
+          </div>
+        </div>
+        <div class="card card-soft" style="flex: 1;">
+          <div class="card-title">Total Collection</div>
+          <div class="card-value" id="totalCollection">₹0</div>
+          <div class="chip-row">
+            <div class="chip">
+              All Bills: <span id="totalBills">0</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="layout">
+        <!-- Menu & item management -->
+        <div class="card card-soft">
+          <div class="menu-header">
+            <h2>Menu</h2>
+            <button class="btn btn-sm" id="addItemBtn">+ Add Item</button>
+          </div>
+          <div class="menu-tabs" id="categoryTabs">
+            <div class="menu-tab active" data-cat="All">All</div>
+            <div class="menu-tab" data-cat="Tea">Tea</div>
+            <div class="menu-tab" data-cat="Coffee">Coffee</div>
+            <div class="menu-tab" data-cat="Snacks">Snacks</div>
+          </div>
+          <div class="menu-grid" id="menuGrid"></div>
+        </div>
+
+        <!-- Cart & billing -->
+        <div class="card cart-card">
+          <div class="cart-header">
+            <h2>Cart</h2>
+            <div class="cart-meta">
+              Bill #: <span id="billNumber"></span>
+            </div>
+          </div>
+          <div class="cart-list" id="cartList"></div>
+          <div class="cart-summary">
+            <div class="summary-row">
+              <span>Subtotal</span>
+              <span id="subtotal">₹0</span>
+            </div>
+            <div class="summary-row">
+              <span>Discount (₹)</span>
+              <input type="number" id="discountInput" min="0" value="0" />
+            </div>
+            <div class="summary-row">
+              <strong>Grand Total</strong>
+              <strong id="grandTotal">₹0</strong>
+            </div>
+          </div>
+          <div class="actions-row">
+            <button class="btn btn-danger" id="clearCartBtn">Clear</button>
+            <button class="btn btn-primary" id="checkoutBtn">
+              Checkout & Print
+            </button>
+          </div>
+          <div class="section-tabs">
+            <div class="section-tab active" data-section="history">
+              Sales History
+            </div>
+            <div class="section-tab" data-section="settings">Settings</div>
+          </div>
+          <div class="section-panel" id="historyPanel">
+            <div class="history-search">
+              <input
+                type="text"
+                id="historySearch"
+                placeholder="Search by bill # or date..."
+              />
+              <button class="btn btn-sm" id="historyTodayBtn">Today</button>
+            </div>
+            <div class="history-list" id="historyList"></div>
+          </div>
+          <div class="section-panel" id="settingsPanel" style="display: none;">
+            <div class="settings-form">
+              <label>Shop Name</label>
+              <input type="text" id="shopNameInput" placeholder="Chai Corner" />
+              <label>QR Payment Image</label>
+              <input type="file" id="qrUpload" accept="image/*" />
+              <div class="qr-preview">
+                <div>QR Preview (upload your own)</div>
+                <img id="qrImage" alt="QR Code" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <footer>
+      Works offline • LocalStorage POS • Upload to GitHub Pages as single HTML
+    </footer>
+  </div>
+
+  <!-- Print area for thermal receipt -->
+  <div id="print-area">
+    <h1 id="print-shop-name">Chai Corner</h1>
+    <div class="row">
+      <span>Bill #: <span id="print-bill-number"></span></span>
+      <span id="print-date"></span>
+    </div>
+    <div class="line"></div>
+    <div class="items" id="print-items"></div>
+    <div class="line"></div>
+    <div class="row">
+      <span>Subtotal</span>
+      <span id="print-subtotal"></span>
+    </div>
+    <div class="row">
+      <span>Discount</span>
+      <span id="print-discount"></span>
+    </div>
+    <div class="row">
+      <strong>Total</strong>
+      <strong id="print-total"></strong>
+    </div>
+    <div class="line"></div>
+    <div style="text-align:center;margin-top:4px;">
+      <div style="margin-bottom:2px;">Scan to Pay</div>
+      <img id="print-qr" style="max-width:120px;max-height:120px;" />
+      <div style="margin-top:4px;">Thank you! ☕</div>
+    </div>
+  </div>
+
+  <script>
+    // --- Storage keys ---
+    const STORAGE_KEYS = {
+      ITEMS: "chai_pos_items",
+      SALES: "chai_pos_sales",
+      SETTINGS: "chai_pos_settings",
+      BILL_COUNTER: "chai_pos_bill_counter",
+      THEME: "chai_pos_theme",
+    };
+
+    // --- State ---
+    let items = [];
+    let cart = [];
+    let sales = [];
+    let settings = { shopName: "Chai Corner", qrDataUrl: "" };
+    let currentCategory = "All";
+
+    // --- Helpers ---
+    function loadFromStorage() {
+      items = JSON.parse(localStorage.getItem(STORAGE_KEYS.ITEMS) || "[]");
+      sales = JSON.parse(localStorage.getItem(STORAGE_KEYS.SALES) || "[]");
+      const s = localStorage.getItem(STORAGE_KEYS.SETTINGS);
+      if (s) settings = JSON.parse(s);
+      const theme = localStorage.getItem(STORAGE_KEYS.THEME) || "dark";
+      document.body.className = theme === "light" ? "light" : "dark";
+      document
+        .getElementById("themeToggle")
+        .classList.toggle("light-on", theme === "light");
+    }
+
+    function saveItems() {
+      localStorage.setItem(STORAGE_KEYS.ITEMS, JSON.stringify(items));
+    }
+    function saveSales() {
+      localStorage.setItem(STORAGE_KEYS.SALES, JSON.stringify(sales));
+    }
+    function saveSettings() {
+      localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(settings));
+    }
+
+    function getNextBillNumber() {
+      let num = parseInt(
+        localStorage.getItem(STORAGE_KEYS.BILL_COUNTER) || "1000",
+        10
+      );
+      num += 1;
+      localStorage.setItem(STORAGE_KEYS.BILL_COUNTER, String(num));
+      return num;
+    }
+
+    function formatCurrency(v) {
+      return "₹" + v.toFixed(2);
+    }
+
+    function todayString() {
+      const d = new Date();
+      return d.toISOString().slice(0, 10);
+    }
+
+    function isToday(dateStr) {
+      return dateStr.slice(0, 10) === todayString();
+    }
+
+    // --- Demo items if empty ---
+    function ensureDemoItems() {
+      if (items.length > 0) return;
+      items = [
+        {
+          id: 1,
+          name: "Masala Tea",
+          category: "Tea",
+          price: 15,
+          img: "https://images.pexels.com/photos/302899/pexels-photo-302899.jpeg?auto=compress&cs=tinysrgb&w=400",
+        },
+        {
+          id: 2,
+          name: "Ginger Tea",
+          category: "Tea",
+          price: 18,
+          img: "https://images.pexels.com/photos/1417945/pexels-photo-1417945.jpeg?auto=compress&cs=tinysrgb&w=400",
+        },
+        {
+          id: 3,
+          name: "Filter Coffee",
+          category: "Coffee",
+          price: 20,
+          img: "https://images.pexels.com/photos/312418/pexels-photo-312418.jpeg?auto=compress&cs=tinysrgb&w=400",
+        },
+        {
+          id: 4,
+          name: "Cold Coffee",
+          category: "Coffee",
+          price: 35,
+          img: "https://images.pexels.com/photos/434213/pexels-photo-434213.jpeg?auto=compress&cs=tinysrgb&w=400",
+        },
+        {
+          id: 5,
+          name: "Samosa",
+          category: "Snacks",
+          price: 12,
+          img: "https://images.pexels.com/photos/5908259/pexels-photo-5908259.jpeg?auto=compress&cs=tinysrgb&w=400",
+        },
+        {
+          id: 6,
+          name: "Vada",
+          category: "Snacks",
+          price: 10,
+          img: "https://images.pexels.com/photos/5908258/pexels-photo-5908258.jpeg?auto=compress&cs=tinysrgb&w=400",
+        },
+      ];
+      saveItems();
+    }
+
+    // --- UI renderers ---
+    function renderDate() {
+      const d = new Date();
+      const s =
+        d.toLocaleDateString("en-IN", {
+          day: "2-digit",
+          month: "short",
+          year: "numeric",
+        }) +
+        " • " +
+        d.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" });
+      document.getElementById("today-date").textContent = s;
+    }
+
+    function renderMenu() {
+      const grid = document.getElementById("menuGrid");
+      grid.innerHTML = "";
+      const filtered =
+        currentCategory === "All"
+          ? items
+          : items.filter((i) => i.category === currentCategory);
+      if (filtered.length === 0) {
+        grid.innerHTML =
+          '<div style="font-size:11px;opacity:0.7;">No items. Tap "Add Item".</div>';
+        return;
+      }
+      filtered.forEach((item) => {
+        const card = document.createElement("div");
+        card.className = "item-card";
+        card.innerHTML = `
+          <div class="item-img" style="background-image:url('${
+            item.img || ""
+          }');"></div>
+          <div class="item-body">
+            <div class="item-name">${item.name}</div>
+            <div class="item-meta">
+              <span>${item.category}</span>
+              <span class="item-price">${formatCurrency(item.price)}</span>
+            </div>
+            <div class="item-actions">
+              <button class="btn btn-sm btn-primary">Add</button>
+              <div style="display:flex;gap:4px;">
+                <button class="btn btn-sm">Edit</button>
+                <button class="btn btn-sm btn-danger">Del</button>
+              </div>
+            </div>
+          </div>
+        `;
+        const [addBtn, editBtn, delBtn] = card.querySelectorAll("button");
+        addBtn.addEventListener("click", () => addToCart(item.id));
+        editBtn.addEventListener("click", () => editItem(item.id));
+        delBtn.addEventListener("click", () => deleteItem(item.id));
+        grid.appendChild(card);
+      });
+    }
+
+    function renderCart() {
+      const list = document.getElementById("cartList");
+      list.innerHTML = "";
+      if (cart.length === 0) {
+        list.innerHTML =
+          '<div class="cart-empty">Cart is empty. Tap an item to add.</div>';
+      } else {
+        cart.forEach((c) => {
+          const item = items.find((i) => i.id === c.itemId);
+          if (!item) return;
+          const row = document.createElement("div");
+          row.className = "cart-item";
+          row.innerHTML = `
+            <div class="cart-item-info">
+              <div class="cart-item-name">${item.name}</div>
+              <div class="cart-item-meta">
+                ${formatCurrency(item.price)} × ${c.qty} = ${formatCurrency(
+            item.price * c.qty
+          )}
+              </div>
+            </div>
+            <div class="cart-item-controls">
+              <div class="qty-controls">
+                <button class="qty-btn">-</button>
+                <div class="qty-value">${c.qty}</div>
+                <button class="qty-btn">+</button>
+              </div>
+              <button class="btn btn-sm btn-danger">Remove</button>
+            </div>
+          `;
+          const [minusBtn, plusBtn] = row.querySelectorAll(".qty-btn");
+          const removeBtn = row.querySelector(".btn-danger");
+          minusBtn.addEventListener("click", () =>
+            updateCartQty(c.itemId, c.qty - 1)
+          );
+          plusBtn.addEventListener("click", () =>
+            updateCartQty(c.itemId, c.qty + 1)
+          );
+          removeBtn.addEventListener("click", () => removeFromCart(c.itemId));
+          list.appendChild(row);
+        });
+      }
+      const subtotal = cart.reduce((sum, c) => {
+        const item = items.find((i) => i.id === c.itemId);
+        return sum + (item ? item.price * c.qty : 0);
+      }, 0);
+      document.getElementById("subtotal").textContent =
+        formatCurrency(subtotal);
+      const discount = parseFloat(
+        document.getElementById("discountInput").value || "0"
+      );
+      const grand = Math.max(subtotal - discount, 0);
+      document.getElementById("grandTotal").textContent = formatCurrency(grand);
+    }
+
+    function renderBillNumber() {
+      const num =
+        localStorage.getItem(STORAGE_KEYS.BILL_COUNTER) || "1000";
+      document.getElementById("billNumber").textContent = num;
+    }
+
+    function renderDashboard() {
+      let todaySales = 0;
+      let todayBills = 0;
+      let todayItems = 0;
+      let totalCollection = 0;
+      let totalBills = sales.length;
+
+      sales.forEach((s) => {
+        totalCollection += s.total;
+        if (isToday(s.date)) {
+          todaySales += s.total;
+          todayBills += 1;
+          todayItems += s.items.reduce((sum, it) => sum + it.qty, 0);
+        }
+      });
+
+      document.getElementById("todaySales").textContent =
+        formatCurrency(todaySales);
+      document.getElementById("todayBills").textContent = todayBills;
+      document.getElementById("todayItems").textContent = todayItems;
+      document.getElementById("totalCollection").textContent =
+        formatCurrency(totalCollection);
+      document.getElementById("totalBills").textContent = totalBills;
+    }
+
+    function renderHistory(filterToday = false) {
+      const list = document.getElementById("historyList");
+      const q = document
+        .getElementById("historySearch")
+        .value.trim()
+        .toLowerCase();
+      list.innerHTML = "";
+      let filtered = sales.slice().sort((a, b) => b.billNumber - a.billNumber);
+      if (filterToday) {
+        filtered = filtered.filter((s) => isToday(s.date));
+      }
+      if (q) {
+        filtered = filtered.filter(
+          (s) =>
+            String(s.billNumber).includes(q) ||
+            s.date.slice(0, 10).includes(q)
+        );
+      }
+      if (filtered.length === 0) {
+        list.innerHTML =
+          '<div style="font-size:11px;opacity:0.7;">No bills found.</div>';
+        return;
+      }
+      filtered.forEach((s) => {
+        const div = document.createElement("div");
+        div.className = "history-item";
+        div.innerHTML = `
+          <div class="history-top">
+            <span>Bill #${s.billNumber}</span>
+            <span>${s.date.slice(0, 16)}</span>
+          </div>
+          <div class="history-items">
+            ${s.items
+              .map((it) => `${it.name} × ${it.qty}`)
+              .join(", ")}
+          </div>
+          <div class="history-total">${formatCurrency(s.total)}</div>
+        `;
+        list.appendChild(div);
+      });
+    }
+
+    function renderSettings() {
+      document.getElementById("shopNameInput").value = settings.shopName;
+      document.getElementById("print-shop-name").textContent =
+        settings.shopName || "Chai Corner";
+      const qrImg = document.getElementById("qrImage");
+      const printQr = document.getElementById("print-qr");
+      if (settings.qrDataUrl) {
+        qrImg.src = settings.qrDataUrl;
+        printQr.src = settings.qrDataUrl;
+      } else {
+        qrImg.removeAttribute("src");
+        printQr.removeAttribute("src");
+      }
+    }
+
+    // --- Cart operations ---
+    function addToCart(itemId) {
+      const existing = cart.find((c) => c.itemId === itemId);
+      if (existing) {
+        existing.qty += 1;
+      } else {
+        cart.push({ itemId, qty: 1 });
+      }
+      renderCart();
+    }
+
+    function updateCartQty(itemId, qty) {
+      const idx = cart.findIndex((c) => c.itemId === itemId);
+      if (idx === -1) return;
+      if (qty <= 0) {
+        cart.splice(idx, 1);
+      } else {
+        cart[idx].qty = qty;
+      }
+      renderCart();
+    }
+
+    function removeFromCart(itemId) {
+      cart = cart.filter((c) => c.itemId !== itemId);
+      renderCart();
+    }
+
+    function clearCart() {
+      cart = [];
+      document.getElementById("discountInput").value = "0";
+      renderCart();
+    }
+
+    // --- Item CRUD ---
+    function addItemDialog() {
+      const name = prompt("Item name:");
+      if (!name) return;
+      const category = prompt("Category (Tea/Coffee/Snacks):", "Tea") || "Tea";
+      const price = parseFloat(prompt("Price (₹):", "10") || "0");
+      const img = prompt("Image URL (optional):", "") || "";
+      const id =
+        items.length > 0 ? Math.max(...items.map((i) => i.id)) + 1 : 1;
+      items.push({ id, name, category, price, img });
+      saveItems();
+      renderMenu();
+    }
+
+    function editItem(id) {
+      const item = items.find((i) => i.id === id);
+      if (!item) return;
+      const name = prompt("Item name:", item.name);
+      if (!name) return;
+      const category = prompt(
+        "Category (Tea/Coffee/Snacks):",
+        item.category
+      );
+      const price = parseFloat(
+        prompt("Price (₹):", String(item.price)) || String(item.price)
+      );
+      const img = prompt("Image URL (optional):", item.img || "") || "";
+      item.name = name;
+      item.category = category || item.category;
+      item.price = price;
+      item.img = img;
+      saveItems();
+      renderMenu();
+    }
+
+    function deleteItem(id) {
+      if (!confirm("Delete this item?")) return;
+      items = items.filter((i) => i.id !== id);
+      saveItems();
+      renderMenu();
+    }
+
+    // --- Checkout & print ---
+    function checkout() {
+      if (cart.length === 0) {
+        alert("Cart is empty.");
+        return;
+      }
+      const subtotal = cart.reduce((sum, c) => {
+        const item = items.find((i) => i.id === c.itemId);
+        return sum + (item ? item.price * c.qty : 0);
+      }, 0);
+      const discount = parseFloat(
+        document.getElementById("discountInput").value || "0"
+      );
+      const total = Math.max(subtotal - discount, 0);
+      const billNumber = getNextBillNumber();
+      const date = new Date().toISOString();
+      const sale = {
+        billNumber,
+        date,
+        subtotal,
+        discount,
+        total,
+        items: cart.map((c) => {
+          const item = items.find((i) => i.id === c.itemId);
+          return {
+            itemId: c.itemId,
+            name: item ? item.name : "",
+            price: item ? item.price : 0,
+            qty: c.qty,
+          };
+        }),
+      };
+      sales.push(sale);
+      saveSales();
+      renderDashboard();
+      renderBillNumber();
+      renderHistory();
+
+      // Prepare print
+      document.getElementById("print-bill-number").textContent = billNumber;
+      document.getElementById("print-date").textContent = date.slice(0, 16);
+      document.getElementById("print-subtotal").textContent =
+        formatCurrency(subtotal);
+      document.getElementById("print-discount").textContent =
+        formatCurrency(discount);
+      document.getElementById("print-total").textContent =
+        formatCurrency(total);
+      const itemsDiv = document.getElementById("print-items");
+      itemsDiv.innerHTML = "";
+      sale.items.forEach((it) => {
+        const d = document.createElement("div");
+        d.innerHTML = `<span>${it.name} × ${it.qty}</span><span>${formatCurrency(
+          it.price * it.qty
+        )}</span>`;
+        itemsDiv.appendChild(d);
+      });
+
+      window.print();
+      clearCart();
+    }
+
+    // --- Theme toggle ---
+    function toggleTheme() {
+      const current = document.body.className === "light" ? "light" : "dark";
+      const next = current === "light" ? "dark" : "light";
+      document.body.className = next;
+      localStorage.setItem(STORAGE_KEYS.THEME, next);
+      document
+        .getElementById("themeToggle")
+        .classList.toggle("light-on", next === "light");
+    }
+
+    // --- Events ---
+    function setupEvents() {
+      document
+        .getElementById("themeToggle")
+        .addEventListener("click", toggleTheme);
+
+      document.getElementById("addItemBtn").addEventListener("click", () =>
+        addItemDialog()
+      );
+
+      document
+        .getElementById("discountInput")
+        .addEventListener("input", renderCart);
+
+      document
+        .getElementById("clearCartBtn")
+        .addEventListener("click", clearCart);
+
+      document
+        .getElementById("checkoutBtn")
+        .addEventListener("click", checkout);
+
+      document
+        .getElementById("historySearch")
+        .addEventListener("input", () => renderHistory(false));
+
+      document
+        .getElementById("historyTodayBtn")
+        .addEventListener("click", () => renderHistory(true));
+
+      document
+        .getElementById("shopNameInput")
+        .addEventListener("input", (e) => {
+          settings.shopName = e.target.value || "Chai Corner";
+          saveSettings();
+          renderSettings();
+        });
+
+      document.getElementById("qrUpload").addEventListener("change", (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+          settings.qrDataUrl = ev.target.result;
+          saveSettings();
+          renderSettings();
+        };
+        reader.readAsDataURL(file);
+      });
+
+      document.querySelectorAll(".menu-tab").forEach((tab) => {
+        tab.addEventListener("click", () => {
+          document
+            .querySelectorAll(".menu-tab")
+            .forEach((t) => t.classList.remove("active"));
+          tab.classList.add("active");
+          currentCategory = tab.dataset.cat;
+          renderMenu();
+        });
+      });
+
+      document.querySelectorAll(".section-tab").forEach((tab) => {
+        tab.addEventListener("click", () => {
+          document
+            .querySelectorAll(".section-tab")
+            .forEach((t) => t.classList.remove("active"));
+          tab.classList.add("active");
+          const section = tab.dataset.section;
+          document.getElementById("historyPanel").style.display =
+            section === "history" ? "block" : "none";
+          document.getElementById("settingsPanel").style.display =
+            section === "settings" ? "block" : "none";
+        });
+      });
+    }
+
+    // --- Init ---
+    function init() {
+      loadFromStorage();
+      ensureDemoItems();
+      renderDate();
+      renderMenu();
+      renderCart();
+      renderBillNumber();
+      renderDashboard();
+      renderHistory();
+      renderSettings();
+      setupEvents();
+      setInterval(renderDate, 30000);
+    }
+
+    document.addEventListener("DOMContentLoaded", init);
+  </script>
+</body>
+</html>
